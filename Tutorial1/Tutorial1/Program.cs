@@ -5,7 +5,12 @@
         if (numbers == null || numbers.Length == 0)
             return 0;
 
-        return numbers.Average();
+        int sum = 0;
+        foreach (var value in numbers)
+        {
+            sum += value;
+        }
+        return (double)sum / numbers.Length;
     }
     
     public static int FindMaxValue(int[] numbers)
