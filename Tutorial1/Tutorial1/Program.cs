@@ -1,3 +1,10 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿public static class Tutorial1
+{
+    public static double CalculateAverage(int[] numbers)
+    {
+        if (numbers == null || numbers.Length == 0)
+            return 0;
 
-Console.WriteLine("Hello, World!");
+        return numbers.Average();
+    }
+}
