@@ -1,14 +1,24 @@
-﻿namespace Tutorial3.Containers;
+﻿using Tutorial3.Interfaces;
 
-public class HazardousContainer : Container
+namespace Tutorial3.Containers;
+
+public class HazardousContainer : Container, IHazardNotifier
 {
-    public HazardousContainer(double height, double depth, double tareWeight, double maxPayload, char containerType) : base(height, depth, tareWeight, maxPayload, 'H')
+    public HazardousContainer(double height, double depth, double tareWeight, double maxPayload, char containerType) : base(height, depth, tareWeight, maxPayload, containerType)
     {
     }
 
     public override void LoadCargo(double mass)
     {
-        base.LoadCargo(mass);
+        if (mass <= 0) throw new ArgumentException("Mass must be greater than zero");
+
+        if (!CanLoadCargo(mass))
+        {
+            NotifyHazard("The attempt of performing a dangerous operation");
+            throw new OverflowException();
+        }
+
+        CargoMass += mass;
     }
 
     public void NotifyHazard(string message)
@@ -17,8 +27,9 @@ public class HazardousContainer : Container
                           $"Message: {message}");
     }
 
-    public virtual void EmptyCargo()
+    public override void ShowCargoInfo()
     {
-        throw new NotImplementedException();
+        base.ShowCargoInfo();
+        Console.WriteLine($"The Container MIGHT be hazardous");
     }
 }
