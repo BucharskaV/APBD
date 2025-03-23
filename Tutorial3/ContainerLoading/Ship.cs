@@ -79,5 +79,6 @@ public class Ship
     }
     
     public bool IsThereFreeSpace(double num) => Containers.Count + num < MaxContainerNumber;
-    public bool IsAppropriateWeight(double weight) => CurrentWeight + weight <= MaxWeight;
+    //MaxWeight is stored in tons so we need to convert it to kilos
+    public bool IsAppropriateWeight(double weight) => CurrentWeight + weight <= 1000*MaxWeight;
 }
