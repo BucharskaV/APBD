@@ -19,7 +19,7 @@ namespace LegacyApp
 
         public bool AddUser(string firstName, string lastName, string email, DateTime dateOfBirth, int clientId)
         {
-            if (_userValidator.Validate(firstName, lastName, email, dateOfBirth))
+            if (!_userValidator.Validate(firstName, lastName, email, dateOfBirth))
             {
                 return false;
             }
