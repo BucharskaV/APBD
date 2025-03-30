@@ -21,7 +21,7 @@ public class UserServiceTest
     }
     
     [Fact]
-    public void AddUser_WhenEmailDoesNotContainDotAnd_ShouldReturnFalse()
+    public void AddUser_WhenEmailDoesNotContainAppropriateSymbols_ShouldReturnFalse()
     {
         var userService = new UserService();
 
