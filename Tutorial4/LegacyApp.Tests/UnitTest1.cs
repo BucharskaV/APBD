@@ -5,12 +5,12 @@ namespace LegacyApp.Tests
 {
     public class UnitTest1
     {
-        private Calculator _sut;
+        /*private Calculator _sut;
 
         public UnitTest1()
         {
             _sut = new Calculator();
-        }
+        }*/
         
         [Fact]
         public void Test1()
