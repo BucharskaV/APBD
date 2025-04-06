@@ -174,7 +174,7 @@ public class EmpDeptSalgradeTests
                     emp.Sal,
                     avg.AvgSal
                 })
-            .Where(res => res.Sal >= res.AvgSal)
+            .Where(res => res.Sal > res.AvgSal)
             .Select(res => res.EName)
             .ToList();
         
