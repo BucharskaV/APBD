@@ -12,7 +12,7 @@ public class VisitsControllers : ControllerBase
     private readonly List<Visit> _visits = VisitsRepository.Visits;
     
     //retrieve a list of visits associated with a given animal
-    [HttpGet("{animalId:}/visits")]
+    [HttpGet]
     public IActionResult GetVisitsByAnimal(int animalId)
     {
         var animal = _animals.FirstOrDefault(a => a.Id == animalId);
@@ -23,11 +23,11 @@ public class VisitsControllers : ControllerBase
     
     //add new visit
     [HttpPost]
-    public IActionResult Create(CreateVisitRequest request)
+    public IActionResult Create([FromRoute] int animalId, CreateVisitRequest request)
     {
         var id = _visits.Max(v => v.Id) + 1;
-        var visit = new Visit { Id = id, Date = request.Date, AnimalId = request.AnimalId, Price = request.Price };
+        var visit = new Visit { Id = id, Date = request.Date, AnimalId = animalId, Price = request.Price };
         _visits.Add(visit);
-        return CreatedAtAction(nameof(GetVisitsByAnimal), new { id }, visit);
+        return CreatedAtAction(nameof(GetVisitsByAnimal), new { animalId = animalId }, visit);
     }
 }
