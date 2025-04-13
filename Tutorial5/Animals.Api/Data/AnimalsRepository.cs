@@ -2,7 +2,7 @@
 
 namespace Animals.Api.Data;
 
-public class AnimalsRepository
+public static class AnimalsRepository
 {
     public static List<Animal> Animals = 
     [
