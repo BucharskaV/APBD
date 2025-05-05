@@ -3,6 +3,7 @@ using Trips.API.Contracts.Requests;
 using Trips.API.Entities;
 using Trips.API.Exceptions;
 using Trips.API.Services;
+using Trips.API.Services.Interfaces;
 
 namespace Trips.API.Controllers;
 
@@ -10,10 +11,10 @@ namespace Trips.API.Controllers;
 [Route("api/clients")]
 public class ClientsController : ControllerBase
 {
-    private readonly ClientService _clientService;
-    private readonly TripService _tripService;
+    private readonly IClientService _clientService;
+    private readonly ITripService _tripService;
 
-    public ClientsController(ClientService clientService, TripService tripService)
+    public ClientsController(IClientService clientService, ITripService tripService)
     {
         _clientService = clientService;
         _tripService = tripService;

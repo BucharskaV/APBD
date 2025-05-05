@@ -1,10 +1,11 @@
 ﻿using Trips.API.Entities;
 using Trips.API.Exceptions;
 using Trips.API.Repositories.Interfaces;
+using Trips.API.Services.Interfaces;
 
 namespace Trips.API.Services;
 
-public class TripService
+public class TripService : ITripService
 {
     private readonly ITripRepository _tripRepository;
     private readonly IClientRepository _clientRepository;

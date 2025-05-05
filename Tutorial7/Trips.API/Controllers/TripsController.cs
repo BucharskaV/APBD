@@ -2,6 +2,7 @@
 using Trips.API.Entities;
 using Trips.API.Repositories.Interfaces;
 using Trips.API.Services;
+using Trips.API.Services.Interfaces;
 
 namespace Trips.API.Controllers;
 
@@ -9,9 +10,9 @@ namespace Trips.API.Controllers;
 [Route("api/trips")]
 public class TripsController : ControllerBase
 {
-    private readonly TripService _tripService;
+    private readonly ITripService _tripService;
     
-    public TripsController(TripService tripService)
+    public TripsController(ITripService tripService)
     {
         _tripService = tripService;
     }

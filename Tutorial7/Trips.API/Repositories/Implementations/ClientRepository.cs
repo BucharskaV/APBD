@@ -10,7 +10,7 @@ public class ClientRepository : IClientRepository
 
     public ClientRepository(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _connectionString = configuration.GetConnectionString("Default");
     }
     
     //Checks if the Client exists by ID
@@ -69,31 +69,36 @@ public class ClientRepository : IClientRepository
 
     //Retrieve reservation
     public async Task<List<ClientTrip>?> GetClientTripsAsync(int id)
+{
+    var client = await GetClientByIdAsync(id);
+    if (client is null)
+        return null;
+
+    Dictionary<int, ClientTrip> clientTrips = new Dictionary<int, ClientTrip>();
+
+    string query = @"SELECT T.IdTrip, T.Name, T.DateFrom, T.DateTo, T.Description, T.MaxPeople, CT.PaymentDate, CT.RegisteredAt, C.IdCountry, C.Name
+                     FROM Client_Trip as CT 
+                     JOIN Trip T on T.IdTrip = CT.IdTrip
+                     JOIN Country_Trip as CT2 on CT2.IdTrip = T.IdTrip
+                     JOIN Country as C on C.IdCountry = CT2.IdCountry
+                     WHERE CT.IdClient = @id";
+
+    using (SqlConnection connection = new SqlConnection(_connectionString))
+    using (SqlCommand command = new SqlCommand(query, connection))
     {
-        var client = await GetClientByIdAsync(id);
-        if (client is null)
-            return null;
-        Dictionary<int, ClientTrip> clientTrips = new Dictionary<int, ClientTrip>();
-        string query = @"SELECT T.IdTrip, T.Name, T.DateFrom, T.DateTo, T.Description, T.MaxPeople, CT.PaymentDate, CT.RegisteredAt, C.IdCountry, C.Name
-                             FROM Client_Trip as CT 
-                             JOIN Trip T on T.IdTrip = CT.IdTrip
-                             JOIN Country_Trip as CT2 on CT2.IdTrip = T.IdTrip
-                             JOIN Country as C on C.IdCountry = CT2.IdCountry
-                             WHERE CT.IdClient = @id
-                             ";
-        using (SqlConnection connection = new SqlConnection(_connectionString))
-        using (SqlCommand command = new SqlCommand(query, connection))
+        await connection.OpenAsync();
+        command.Parameters.AddWithValue("@id", id);
+        using (SqlDataReader reader = await command.ExecuteReaderAsync())
         {
-            await connection.OpenAsync();
-            command.Parameters.AddWithValue("@id", id);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            while (await reader.ReadAsync())
             {
-                while (await reader.ReadAsync())
+                var tripId = reader.GetInt32(0);
+                var countryId = reader.GetInt32(8);
+                var countryName = reader.GetString(9);
+
+                if (!clientTrips.TryGetValue(tripId, out var clientTrip))
                 {
-                    var tripId = reader.GetInt32(0);
-                    var countryId = reader.GetInt32(8);
-                    var countryName = reader.GetString(9);
-                    var clientTrip = new ClientTrip
+                    clientTrip = new ClientTrip
                     {
                         Client = client,
                         Trip = new Trip
@@ -110,18 +115,21 @@ public class ClientRepository : IClientRepository
                         RegisteredAt = reader.GetInt32(7)
                     };
                     clientTrips.Add(tripId, clientTrip);
-                    
-                    var country = new Country { Id = countryId, Name = countryName };
-                    if (clientTrip.Trip.Countries.All(c => c.Name != countryName) == true)
+                }
+                if (clientTrip.Trip.Countries.All(c => c.Id != countryId))
+                {
+                    clientTrip.Trip.Countries.Add(new Country
                     {
-                        clientTrip.Trip.Countries.Add(country);
-                    }
+                        Id = countryId,
+                        Name = countryName
+                    });
                 }
             }
         }
-        return clientTrips.Values.ToList();
-        
     }
+    return clientTrips.Values.ToList();
+}
+
 
     //Create a reservation
     public async Task<bool> CreateClientTripAsync(ClientTrip clientTrip)

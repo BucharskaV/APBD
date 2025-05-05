@@ -10,19 +10,19 @@ public class TripRepository : ITripRepository
 
     public TripRepository(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _connectionString = configuration.GetConnectionString("Default");
     }
     
     // Return trip details including ID, name, description, date range, and maximum number of participants
     //Include country information for each trip
     public async Task<List<Trip>> GetTripsAsync()
     {
-        Dictionary<int, Trip>? trips = new Dictionary<int, Trip>();
+        Dictionary<int, Trip> trips = new();
         string query = @"SELECT t.IdTrip, t.Name, t.Description, t.DateFrom, t.DateTo, t.MaxPeople, c.IdCountry, c.Name
-                             FROM Country_Trip as ct 
-                                 JOIN Country as c on ct.IdCountry = c.IdCountry 
-                                 JOIN Trip as t on ct.IdTrip = t.IdTrip";
-        
+                     FROM Country_Trip as ct 
+                     JOIN Country as c on ct.IdCountry = c.IdCountry 
+                     JOIN Trip as t on ct.IdTrip = t.IdTrip";
+
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -32,23 +32,27 @@ public class TripRepository : ITripRepository
                 while (await reader.ReadAsync())
                 {
                     var id = reader.GetInt32(0);
-                    var trip = new Trip
+
+                    if (!trips.TryGetValue(id, out Trip trip))
                     {
-                        Id = id,
-                        Name = reader.GetString(1),
-                        Description = reader.GetString(2),
-                        DateFrom = reader.GetDateTime(3),
-                        DateTo = reader.GetDateTime(4),
-                        MaxPeople = reader.GetInt32(5),
-                        Countries = []
-                    };
-                    trips.Add(id, trip);
+                        trip = new Trip
+                        {
+                            Id = id,
+                            Name = reader.GetString(1),
+                            Description = reader.GetString(2),
+                            DateFrom = reader.GetDateTime(3),
+                            DateTo = reader.GetDateTime(4),
+                            MaxPeople = reader.GetInt32(5),
+                            Countries = new List<Country>()
+                        };
+                        trips.Add(id, trip);
+                    }
+
                     if (!reader.IsDBNull(6))
                     {
-                        var countryId = reader.GetInt32(6);
-                        Country country = new()
+                        var country = new Country
                         {
-                            Id = countryId,
+                            Id = reader.GetInt32(6),
                             Name = reader.GetString(7),
                         };
                         trip.Countries.Add(country);
@@ -66,13 +70,14 @@ public class TripRepository : ITripRepository
         var tripExists = await TripExistsAsync(id);
         if (!tripExists)
             return null;
-        Dictionary<int, Trip>? trips = new Dictionary<int, Trip>();
+
+        Dictionary<int, Trip> trips = new Dictionary<int, Trip>();
         string query = @"SELECT t.IdTrip, t.Name, t.Description, t.DateFrom, t.DateTo, t.MaxPeople, c.IdCountry, c.Name
-                             FROM Country_Trip as ct 
-                                 JOIN Country as c on ct.IdCountry = c.IdCountry 
-                                 JOIN Trip as t on ct.IdTrip = t.IdTrip
-                                 WHERE ct.IdTrip = @id";
-        
+                         FROM Country_Trip as ct 
+                         JOIN Country as c on ct.IdCountry = c.IdCountry 
+                         JOIN Trip as t on ct.IdTrip = t.IdTrip
+                         WHERE ct.IdTrip = @id";
+
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -83,33 +88,44 @@ public class TripRepository : ITripRepository
                 while (await reader.ReadAsync())
                 {
                     var idt = reader.GetInt32(0);
-                    var trip = new Trip
+                    Trip trip;
+                    if (!trips.ContainsKey(idt))
                     {
-                        Id = idt,
-                        Name = reader.GetString(1),
-                        Description = reader.GetString(2),
-                        DateFrom = reader.GetDateTime(3),
-                        DateTo = reader.GetDateTime(4),
-                        MaxPeople = reader.GetInt32(5),
-                        Countries = []
-                    };
-                    trips.Add(idt, trip);
+                        trip = new Trip
+                        {
+                            Id = idt,
+                            Name = reader.GetString(1),
+                            Description = reader.GetString(2),
+                            DateFrom = reader.GetDateTime(3),
+                            DateTo = reader.GetDateTime(4),
+                            MaxPeople = reader.GetInt32(5),
+                            Countries = new List<Country>()
+                        };
+                        trips.Add(idt, trip);
+                    }
+                    else
+                    {
+                        trip = trips[idt];
+                    }
                     if (!reader.IsDBNull(6))
                     {
                         var countryId = reader.GetInt32(6);
-                        Country country = new()
+                        var countryName = reader.GetString(7);
+                        Country country = new Country
                         {
                             Id = countryId,
-                            Name = reader.GetString(7),
+                            Name = countryName,
                         };
-                        trip.Countries.Add(country);
+                        if (!trip.Countries.Any(c => c.Id == countryId))
+                        {
+                            trip.Countries.Add(country);
+                        }
                     }
                 }
             }
         }
         return trips.Values.FirstOrDefault();
     }
-    
     //Checks if the trip exists by Id
     public async Task<bool> TripExistsAsync(int id)
     {
