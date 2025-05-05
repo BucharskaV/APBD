@@ -13,7 +13,7 @@ public class ClientRepository : IClientRepository
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
     
-    //Checks if the Client exists by Id
+    //Checks if the Client exists by ID
     public async Task<bool> ClientExistsAsync(int id)
     {
         if (id <= 0) return false;
@@ -30,7 +30,7 @@ public class ClientRepository : IClientRepository
         }
     }
 
-    //Retrieve Client exists by Id
+    //Retrieve Client exists by ID
     public async Task<Client?> GetClientByIdAsync(int id)
     {
         Client? client = null;
@@ -40,7 +40,7 @@ public class ClientRepository : IClientRepository
         Dictionary<int, Client>? clients = new Dictionary<int, Client>();
         string query = @"SELECT IdClient, FirstName, LastName, Email, Telephone, Pesel
                              FROM Client
-                             WHERE IdClient = @clientId";
+                             WHERE IdClient = @id";
         
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -140,7 +140,7 @@ public class ClientRepository : IClientRepository
                 clientTrip.PaymentDate.HasValue ? clientTrip.PaymentDate.Value : DBNull.Value);
 
             await connection.OpenAsync();
-            var rowsAffected = Convert.ToInt32(await command.ExecuteScalarAsync());
+            var rowsAffected = await command.ExecuteNonQueryAsync();
             return rowsAffected > 0;
         }
     }

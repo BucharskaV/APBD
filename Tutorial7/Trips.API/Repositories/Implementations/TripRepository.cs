@@ -126,4 +126,32 @@ public class TripRepository : ITripRepository
             return result != null && Convert.ToInt32(result) == 1;
         }
     }
+    //Checks if the reservation exists
+    public async Task<bool> ReservationExistsAsync(int clientId, int tripId)
+    {
+        string query = @"SELECT 1 FROM Client_Trip WHERE IdClient = @ClientId AND IdTrip = @TripId";
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            await connection.OpenAsync();
+            command.Parameters.AddWithValue("@ClientId", clientId);
+            command.Parameters.AddWithValue("@TripId", tripId);
+            var result = await command.ExecuteScalarAsync();
+            return result != null;
+        }
+    }
+    
+    //Deletes reservation
+    public async Task DeleteReservationAsync(int clientId, int tripId)
+    {
+        string query = @"DELETE FROM Client_Trip WHERE IdClient = @ClientId AND IdTrip = @TripId";
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            await connection.OpenAsync();
+            command.Parameters.AddWithValue("@ClientId", clientId);
+            command.Parameters.AddWithValue("@TripId", tripId);
+            await command.ExecuteNonQueryAsync();
+        }
+    }
 }
