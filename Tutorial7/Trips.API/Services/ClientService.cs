@@ -1,10 +1,11 @@
 ﻿using Trips.API.Contracts.Requests;
 using Trips.API.Entities;
 using Trips.API.Repositories.Interfaces;
+using Trips.API.Services.Interfaces;
 
 namespace Trips.API.Services;
 
-public class ClientService
+public class ClientService : IClientService
 {
     private readonly IClientRepository _clientRepository;
 
@@ -12,7 +13,7 @@ public class ClientService
     {
         _clientRepository = clientRepository;
     }
-
+    
     public async Task<ICollection<ClientTrip>?> GetAllClientTripsAsync(int clientId)
     {
         return await _clientRepository.GetClientTripsAsync(clientId);
