@@ -17,8 +17,9 @@ public class WarehouseController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RegisterProductInWarehouseAsync([FromBody] ProductWarehouseRequest request,
         CancellationToken token = default)
@@ -34,7 +35,7 @@ public class WarehouseController : ControllerBase
         }
         catch (AppropriateOrderNotFoundException ex)
         {
-            return BadRequest(ex.Message);
+            return NotFound(ex.Message);
         }
         catch (OrderIsCompletedException ex)
         {
@@ -42,11 +43,11 @@ public class WarehouseController : ControllerBase
         }
         catch (ProductDoesNotExistException ex)
         {
-            return BadRequest(ex.Message);
+            return NotFound(ex.Message);
         }
         catch (WarehouseDoesNotExistException ex)
         {
-            return BadRequest(ex.Message);
+            return NotFound(ex.Message);
         }
         catch (Exception)
         {
@@ -55,7 +56,7 @@ public class WarehouseController : ControllerBase
     }
     
     [HttpPost("procedure")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RegisterProductWarehouseWithProcedureAsync([FromBody] ProductWarehouseRequest request, CancellationToken token = default)
     {
