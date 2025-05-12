@@ -1,4 +1,6 @@
-﻿using Warehouse.API.Entities;
+﻿using System.Data;
+using Warehouse.API.Contracts.Requests;
+using Warehouse.API.Entities;
 using Warehouse.API.Repositories.Abstractions;
 
 namespace Warehouse.API.Repositories;
@@ -123,5 +125,22 @@ public class WarehouseRepository : IWarehouseRepository
 
         var result = await command.ExecuteScalarAsync(token);
         return (decimal)(result != null ? Convert.ToDecimal(result) : (decimal?)null);
+    }
+
+    public async Task<int> AddProductToWarehouseUsingProcedureAsync(ProductWarehouseRequest request, CancellationToken token)
+    {
+        var connection = await _unitOfWork.GetConnectionAsync();
+        if (connection.State != ConnectionState.Open)
+            await connection.OpenAsync(token);
+        await using var command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.Transaction = _unitOfWork.Transaction;
+        command.Parameters.AddWithValue("@IdProduct", request.IdProduct);
+        command.Parameters.AddWithValue("@IdWarehouse", request.IdWarehouse);
+        command.Parameters.AddWithValue("@Amount", request.Amount);
+        command.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
+
+        var result = await command.ExecuteScalarAsync(token);
+        return Convert.ToInt32(result);
     }
 }

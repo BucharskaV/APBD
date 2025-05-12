@@ -1,4 +1,5 @@
-﻿using Warehouse.API.Entities;
+﻿using Warehouse.API.Contracts.Requests;
+using Warehouse.API.Entities;
 
 namespace Warehouse.API.Repositories.Abstractions;
 
@@ -14,4 +15,6 @@ public interface IWarehouseRepository
     public Task<int> InsertProductWarehouseAsync(int productId, int warehouseId, int orderId, int amount, decimal price, CancellationToken token = default);
     
     public Task<decimal> GetPriceAsync(int productId, CancellationToken token = default);
+    
+    public Task<int> AddProductToWarehouseUsingProcedureAsync(ProductWarehouseRequest request, CancellationToken token);
 }

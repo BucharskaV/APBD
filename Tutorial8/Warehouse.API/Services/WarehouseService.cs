@@ -48,4 +48,9 @@ public class WarehouseService : IWarehouseService
             throw;
         }
     }
+
+    public async Task<int> RegisterProductWarehouseWithProcedureAsync(ProductWarehouseRequest request, CancellationToken token)
+    {
+        return await _warehouseRepository.AddProductToWarehouseUsingProcedureAsync(request, token);
+    }
 }
