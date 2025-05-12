@@ -1,0 +1,12 @@
+﻿using Microsoft.Data.SqlClient;
+
+namespace Warehouse.API.Repositories;
+
+public interface IUnitOfWork : IAsyncDisposable
+{
+    public ValueTask<SqlConnection> GetConnectionAsync();
+    public SqlTransaction? Transaction { get; }
+    public Task BeginTransactionAsync();
+    public Task CommitTransactionAsync();
+    public Task RollbackTransactionAsync();
+}
