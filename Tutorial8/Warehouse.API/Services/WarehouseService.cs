@@ -23,12 +23,12 @@ public class WarehouseService : IWarehouseService
         {
             if (request.Amount <= 0)
                 throw new AmountMustBeGreaterThanZeroException();
-            if (!await _warehouseRepository.ProductExistsAsync(request.ProductId, token))
+            if (!await _warehouseRepository.ProductExistsAsync(request.IdProduct, token))
                 throw new ProductDoesNotExistException();
-            if (!await _warehouseRepository.WarehouseExistsAsync(request.WarehouseId, token))
+            if (!await _warehouseRepository.WarehouseExistsAsync(request.IdWarehouse, token))
                 throw new WarehouseDoesNotExistException();
             
-            var orderId = await _warehouseRepository.GetOrderIdAsync(request.ProductId, request.Amount, request.CreatedAt, token);
+            var orderId = await _warehouseRepository.GetOrderIdAsync(request.IdProduct, request.Amount, request.CreatedAt, token);
             if(orderId == null)
                 throw new AppropriateOrderNotFoundException();
             if(await _warehouseRepository.OrderCompleteAsync(orderId.Value, token))
@@ -36,9 +36,9 @@ public class WarehouseService : IWarehouseService
             
             await _warehouseRepository.UpdateOrderFulfilledAsync(orderId.Value,  token);
             
-            var priceProduct = await _warehouseRepository.GetPriceAsync(request.ProductId, token);
+            var priceProduct = await _warehouseRepository.GetPriceAsync(request.IdProduct, token);
             var totalPrice = priceProduct * request.Amount;
-            var id = await _warehouseRepository.InsertProductWarehouseAsync(request.ProductId, request.WarehouseId, orderId.Value, request.Amount, totalPrice, token);
+            var id = await _warehouseRepository.InsertProductWarehouseAsync(request.IdProduct, request.IdWarehouse, orderId.Value, request.Amount, totalPrice, token);
             await _unitOfWork.CommitTransactionAsync();
             return id;
         }

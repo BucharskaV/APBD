@@ -17,6 +17,9 @@ public class WarehouseController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RegisterProductInWarehouseAsync([FromBody] ProductWarehouseRequest request,
         CancellationToken token = default)
     {
