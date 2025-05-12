@@ -54,7 +54,7 @@ public class WarehouseController : ControllerBase
         }
     }
     
-    [HttpPost("/procedure")]
+    [HttpPost("procedure")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RegisterProductWarehouseWithProcedureAsync([FromBody] ProductWarehouseRequest request, CancellationToken token = default)
@@ -64,9 +64,10 @@ public class WarehouseController : ControllerBase
             var id = await _warehouseService.RegisterProductWarehouseWithProcedureAsync(request, token);
             return Ok(new { Id = id });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, "Internal Server Error");
+            return StatusCode(500, ex.Message);
         }
     }
+    
 }

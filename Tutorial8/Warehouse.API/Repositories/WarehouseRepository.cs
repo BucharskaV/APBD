@@ -133,6 +133,7 @@ public class WarehouseRepository : IWarehouseRepository
         if (connection.State != ConnectionState.Open)
             await connection.OpenAsync(token);
         await using var command = connection.CreateCommand();
+        command.CommandText = "AddProductToWarehouse";
         command.CommandType = CommandType.StoredProcedure;
         command.Transaction = _unitOfWork.Transaction;
         command.Parameters.AddWithValue("@IdProduct", request.IdProduct);
