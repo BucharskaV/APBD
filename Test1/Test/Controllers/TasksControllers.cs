@@ -25,8 +25,8 @@ public class TasksControllers : ControllerBase
     {
         try
         {
-            await _taskService.GetMemberAsync(id, cancellationToken);
-            return Ok();
+            var response = await _taskService.GetMemberAsync(id, cancellationToken);
+            return Ok(response);
         }
         catch (NoMemberWithProvidedIdException ex)
         {
@@ -38,7 +38,7 @@ public class TasksControllers : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, "Internal Server Error");
+            return StatusCode(500, ex.Message);
         }
     }
     

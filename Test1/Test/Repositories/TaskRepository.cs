@@ -45,7 +45,7 @@ public class TaskRepository : ITaskRepository
                 TasksCreated = []
             };
 
-            if (!reader.IsDBNull(9))
+            if (!reader.IsDBNull(9) && reader.GetInt32(9) == memberId)
             {
                 GetMemberResponse.TaskInfo? taskInfo = new()
                 {
@@ -63,7 +63,7 @@ public class TaskRepository : ITaskRepository
                 };
                 response.TasksAssignedTo.Add(taskInfo);
             }
-            if (!reader.IsDBNull(10))
+            /*if (!reader.IsDBNull(10) && reader.GetInt32(10) == memberId)
             {
                 GetMemberResponse.TaskInfo? taskInfo = new()
                 {
@@ -80,14 +80,14 @@ public class TaskRepository : ITaskRepository
                     }
                 };
                 response.TasksCreated.Add(taskInfo);
-            }
+            }*/
         }
 
-        if (response != null)
+        /*if (response != null)
         {
             response.TasksAssignedTo.OrderDescending().OrderByDescending(t => t.Deadline).ToList();
             response.TasksCreated.OrderDescending().OrderByDescending(t => t.Deadline).ToList();
-        }
+        }*/
         return response;
     }
 
