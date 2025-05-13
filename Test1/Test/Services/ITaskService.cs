@@ -1,6 +1,9 @@
-﻿namespace Test.Services;
+﻿using Test.Contracts.Responses;
+
+namespace Test.Services;
 
 public interface ITaskService
 {
-    public Task DeleteProject(int projectId, CancellationToken cancellationToken = default);
+    public Task DeleteProjectAsync(int projectId, CancellationToken cancellationToken = default);
+    public Task<GetMemberResponse?> GetMemberAsync(int memberId, CancellationToken cancellationToken = default);
 }

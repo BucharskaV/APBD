@@ -47,9 +47,19 @@ public class TaskRepository : ITaskRepository
         return response;
     }
 
-    public Task<bool> MemberExistsAsync(int memberId, CancellationToken cancellationToken = default)
+    public async Task<bool> MemberExistsAsync(int memberId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        const string query = @"SELECT 
+                                 IIF(EXISTS (SELECT 1 FROM TeamMember 
+                                         WHERE TeamMember.IdTeamMember = @memberId), 1, 0);   
+                                ";
+        var connection = await _unitOfWork.GetConnectionAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.Transaction = _unitOfWork.Transaction;
+        command.Parameters.AddWithValue("@memberId", memberId);
+        var result = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
+        return result == 1;
     }
 
     public async Task<bool> ProjectExistsAsync(int projectId, CancellationToken cancellationToken = default)

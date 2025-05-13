@@ -1,4 +1,5 @@
-﻿using Test.Exceptions;
+﻿using Test.Contracts.Responses;
+using Test.Exceptions;
 using Test.Repositories;
 using Test.Repositories.Abstractions;
 
@@ -14,9 +15,8 @@ public class TaskService : ITaskService
         _taskRepository = taskRepository;
         _unitOfWork = unitOfWork;
     }
-
-
-    public async Task DeleteProject(int projectId, CancellationToken cancellationToken = default)
+    
+    public async Task DeleteProjectAsync(int projectId, CancellationToken cancellationToken = default)
     {
         await _unitOfWork.BeginTransactionAsync();
         try
@@ -29,6 +29,27 @@ public class TaskService : ITaskService
             await _taskRepository.DeleteTaskAsync(projectId, cancellationToken);
             await _taskRepository.DeleteProjectAsync(projectId, cancellationToken);
             await _unitOfWork.CommitTransactionAsync();
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task<GetMemberResponse?> GetMemberAsync(int memberId, CancellationToken cancellationToken = default)
+    {
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            if(memberId <= 0)
+                throw new EnteredDataIsWrongException();
+            if (!await _taskRepository.MemberExistsAsync(memberId, cancellationToken))
+                throw new NoMemberWithProvidedIdException(memberId);
+            
+            var member = await _taskRepository.GetMemberByIdAsync(memberId, cancellationToken);
+            await _unitOfWork.CommitTransactionAsync();
+            return member;
         }
         catch (Exception)
         {

@@ -15,17 +15,45 @@ public class TasksControllers : ControllerBase
         _taskService = taskService;
     }
 
+    [HttpGet]
+    [Route("/api/tasks/{id:int}")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetMemberAsync(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _taskService.GetMemberAsync(id, cancellationToken);
+            return Ok();
+        }
+        catch (NoMemberWithProvidedIdException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (EnteredDataIsWrongException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal Server Error");
+        }
+    }
+    
+    
     [HttpDelete]
     [Route("/api/tasks/{id:int}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> DeleteProject([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteProjectAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         try
         {
-            await _taskService.DeleteProject(id, cancellationToken);
+            await _taskService.DeleteProjectAsync(id, cancellationToken);
             return Ok();
         }
         catch (NoProjectWithProvidedIdException ex)
@@ -38,7 +66,7 @@ public class TasksControllers : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, "Internal Server Error");
         }
     }
 }
