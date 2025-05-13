@@ -8,8 +8,8 @@ public class GetMemberResponse
     public string FirstName {get; set;} = string.Empty;
     public string LastName {get; set;} = string.Empty;
     public string Email {get; set;} = string.Empty;
-    public List<TaskInfo> TasksAssignedTo { get; set; } = [];
-    public List<TaskInfo> TasksCreated { get; set; } = [];
+    public List<TaskInfo> TasksAssignedTo { get; set; }
+    public List<TaskInfo> TasksCreated { get; set; }
     public class TaskInfo
     {
         public string Name { get; set; } = string.Empty;

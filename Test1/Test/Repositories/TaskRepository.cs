@@ -16,14 +16,14 @@ public class TaskRepository : ITaskRepository
     {
         const string query = @"
                                     SELECT tm.FirstName, tm.LastName, tm.Email,
-                   t.Name AS TaskName, t.Description, t.Deadline,
-                   p.Name AS ProjectName, tt.Name AS TaskTypeName,
+                   t.Name , t.Description, t.Deadline,
+                   p.Name , tt.Name ,
                    t.IdAssignedTo, t.IdCreator
             FROM TeamMember tm
             LEFT JOIN Task t ON t.IdAssignedTo = tm.IdTeamMember OR t.IdCreator = tm.IdTeamMember
             LEFT JOIN Project p ON t.IdProject = p.IdProject
             LEFT JOIN TaskType tt ON t.IdTaskType = tt.IdTaskType
-            WHERE tm.IdTeamMember = @Id;
+            WHERE tm.IdTeamMember = @memberId;
                             ";
         var con = await _unitOfWork.GetConnectionAsync();
         await using var command = con.CreateCommand();
@@ -37,13 +37,57 @@ public class TaskRepository : ITaskRepository
         {
             response = new GetMemberResponse
             {
-                IdTeamMember = reader.GetInt32(0),
-                FirstName = reader.GetString(1),
-                LastName = reader.GetString(2),
-                Email = reader.GetString(3),
+                IdTeamMember = memberId,
+                FirstName = reader.GetString(0),
+                LastName = reader.GetString(1),
+                Email = reader.GetString(2),
+                TasksAssignedTo = [],
+                TasksCreated = []
             };
+
+            if (!reader.IsDBNull(9))
+            {
+                GetMemberResponse.TaskInfo? taskInfo = new()
+                {
+                    Name = reader.GetString(3),
+                    Description = reader.GetString(4),
+                    Deadline = reader.GetDateTime(5),
+                    Project = new GetMemberResponse.ProjectInfo()
+                    {
+                        Name = reader.GetString(6)
+                    },
+                    TaskType = new GetMemberResponse.TaskTypeInfo()
+                    {
+                        Name = reader.GetString(7)
+                    }
+                };
+                response.TasksAssignedTo.Add(taskInfo);
+            }
+            if (!reader.IsDBNull(10))
+            {
+                GetMemberResponse.TaskInfo? taskInfo = new()
+                {
+                    Name = reader.GetString(3),
+                    Description = reader.GetString(4),
+                    Deadline = reader.GetDateTime(5),
+                    Project = new GetMemberResponse.ProjectInfo()
+                    {
+                        Name = reader.GetString(6)
+                    },
+                    TaskType = new GetMemberResponse.TaskTypeInfo()
+                    {
+                        Name = reader.GetString(7)
+                    }
+                };
+                response.TasksCreated.Add(taskInfo);
+            }
         }
-        
+
+        if (response != null)
+        {
+            response.TasksAssignedTo.OrderDescending().OrderByDescending(t => t.Deadline).ToList();
+            response.TasksCreated.OrderDescending().OrderByDescending(t => t.Deadline).ToList();
+        }
         return response;
     }
 
