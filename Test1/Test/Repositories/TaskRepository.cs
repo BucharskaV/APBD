@@ -1,0 +1,93 @@
+﻿using Test.Contracts.Responses;
+using Test.Repositories.Abstractions;
+
+namespace Test.Repositories;
+
+public class TaskRepository : ITaskRepository
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public TaskRepository(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<GetMemberResponse?> GetMemberByIdAsync(int memberId, CancellationToken cancellationToken = default)
+    {
+        const string query = @"
+                                    SELECT tm.FirstName, tm.LastName, tm.Email,
+                   t.Name AS TaskName, t.Description, t.Deadline,
+                   p.Name AS ProjectName, tt.Name AS TaskTypeName,
+                   t.IdAssignedTo, t.IdCreator
+            FROM TeamMember tm
+            LEFT JOIN Task t ON t.IdAssignedTo = tm.IdTeamMember OR t.IdCreator = tm.IdTeamMember
+            LEFT JOIN Project p ON t.IdProject = p.IdProject
+            LEFT JOIN TaskType tt ON t.IdTaskType = tt.IdTaskType
+            WHERE tm.IdTeamMember = @Id;
+                            ";
+        var con = await _unitOfWork.GetConnectionAsync();
+        await using var command = con.CreateCommand();
+        command.CommandText = query;
+        command.Transaction = _unitOfWork.Transaction;
+        command.Parameters.AddWithValue("@memberId", memberId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        
+        GetMemberResponse? response = null;
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            response = new GetMemberResponse
+            {
+                IdTeamMember = reader.GetInt32(0),
+                FirstName = reader.GetString(1),
+                LastName = reader.GetString(2),
+                Email = reader.GetString(3),
+            };
+        }
+        
+        return response;
+    }
+
+    public Task<bool> MemberExistsAsync(int memberId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<bool> ProjectExistsAsync(int projectId, CancellationToken cancellationToken = default)
+    {
+        const string query = @"SELECT 
+                                 IIF(EXISTS (SELECT 1 FROM Project 
+                                         WHERE Project.IdProject = @projectId), 1, 0);   
+                                ";
+        var connection = await _unitOfWork.GetConnectionAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.Transaction = _unitOfWork.Transaction;
+        command.Parameters.AddWithValue("@projectId", projectId);
+        var result = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
+        return result == 1;
+    }
+
+    public async Task DeleteProjectAsync(int projectId, CancellationToken cancellationToken = default)
+    {
+        const string query = @"Delete FROM Project WHERE Project.IdProject = @projectId;   
+                                ";
+        var connection = await _unitOfWork.GetConnectionAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.Transaction = _unitOfWork.Transaction;
+        command.Parameters.AddWithValue("@projectId", projectId);
+        await command.ExecuteScalarAsync(cancellationToken);
+    }
+
+    public async Task DeleteTaskAsync(int projectId, CancellationToken cancellationToken = default)
+    {
+        const string query = @"Delete FROM Task WHERE Task.IdProject = @projectId;   
+                                ";
+        var connection = await _unitOfWork.GetConnectionAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.Transaction = _unitOfWork.Transaction;
+        command.Parameters.AddWithValue("@projectId", projectId);
+        await command.ExecuteScalarAsync(cancellationToken);
+    }
+}
