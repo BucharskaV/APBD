@@ -1,4 +1,5 @@
 ﻿using TripApp.Application.DTOs;
+using TripApp.Application.Exceptions;
 using TripApp.Application.Mappers;
 using TripApp.Application.Repository;
 using TripApp.Application.Services.Interfaces;
@@ -30,5 +31,22 @@ public class TripService(ITripRepository tripRepository) : ITripService
         var trips = await tripRepository.GetAllTripsAsync();
         var mappedTrips = trips.Select(trip => trip.MapToGetTripDto()).ToList();
         return mappedTrips;
+    }
+
+    public async Task AssignClientToTripAsync(ClientRequestDto request)
+    {
+        if (await tripRepository.ClientExistsByPeselAsync(request.Pesel))
+            throw new ClientExceptions.ClientExistsByPeselException(request.Pesel);
+        
+        if (await tripRepository.ClientRegisteredByPeselAsync(request.Pesel, request.IdTrip))
+            throw new ClientExceptions.ClientRegisteredByPeselException(request.Pesel);
+        
+        if(!await tripRepository.TripExistsAsync(request.IdTrip))
+            throw new TripExceptions.TripDoesNotExistException(request.IdTrip);
+        
+        if(!await tripRepository.TripInFuture(request.IdTrip))
+            throw new TripExceptions.TripHasAlreadyOccuredException(request.IdTrip);
+
+        await tripRepository.AssignClientToTripAsync(request);
     }
 }

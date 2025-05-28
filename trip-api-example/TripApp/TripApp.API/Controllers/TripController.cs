@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TripApp.Application.DTOs;
+using TripApp.Application.Exceptions;
 using TripApp.Application.Services.Interfaces;
 using TripApp.Core.Model;
 
@@ -29,5 +31,33 @@ public class TripController(
         return Ok(paginatedTrips);
     }
 
+    [HttpPost]
+    [Route("{idTrip:int}/clients")]
+    [ProducesResponseType( StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> AssignClientToTrip([FromRoute]int idTrip,[FromBody] ClientRequestDto dto, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await tripService.AssignClientToTripAsync(dto);
+            return Ok();
+        }
+        catch (Exception ex) when (ex is ClientExceptions.ClientExistsByPeselException 
+                                   || ex is ClientExceptions.ClientRegisteredByPeselException 
+                                   || ex is TripExceptions.TripHasAlreadyOccuredException)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex) when (ex is TripExceptions.TripDoesNotExistException)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 
 }

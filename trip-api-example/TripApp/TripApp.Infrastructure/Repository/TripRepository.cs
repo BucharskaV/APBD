@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TripApp.Application.DTOs;
 using TripApp.Application.Repository;
 using TripApp.Core.Model;
 
@@ -42,5 +43,52 @@ public class TripRepository(TripContext tripDbContext) : ITripRepository
             .Include(e => e.IdCountries)
             .OrderBy(e => e.DateFrom)
             .ToListAsync();
+    }
+
+    public async Task<bool> ClientExistsByPeselAsync(string pesel)
+    {
+        var client = await tripDbContext.Clients.FirstOrDefaultAsync(x => x.Pesel == pesel);
+        return client is not null;
+    }
+
+    public async Task<bool> ClientRegisteredByPeselAsync(string pesel, int idTrip)
+    {
+        var client = await tripDbContext.Clients.FirstOrDefaultAsync(x => x.Pesel == pesel);
+        return await tripDbContext.ClientTrips.AnyAsync(ct => client != null && ct.IdClient == client.IdClient && ct.IdTrip == idTrip);
+    }
+
+    public async Task<bool> TripExistsAsync(int idTrip)
+    {
+        var trip = await tripDbContext.Trips.FirstOrDefaultAsync(x => x.IdTrip == idTrip);
+        return trip is not null;
+    }
+
+    public async Task<bool> TripInFuture(int idTrip)
+    {
+        var trip = await tripDbContext.Trips.FirstOrDefaultAsync(x => x.IdTrip == idTrip);
+        return trip != null && trip.DateFrom > DateTime.Now;
+    }
+
+    public async Task AssignClientToTripAsync(ClientRequestDto request)
+    {
+        var client = new Client
+        {
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email,
+            Telephone = request.Telephone,
+            Pesel = request.Pesel
+        };
+        tripDbContext.Clients.Add(client);
+        await tripDbContext.SaveChangesAsync();
+        var clientTrip = new ClientTrip
+        {
+            IdClient = client.IdClient,
+            IdTrip = request.IdTrip,
+            RegisteredAt = DateTime.Now,
+            PaymentDate = request.PaymentDate
+        };
+        tripDbContext.ClientTrips.Add(clientTrip);
+        await tripDbContext.SaveChangesAsync();
     }
 }
