@@ -66,4 +66,45 @@ public class ClinicService(ClinicDBContext context) : IClinicService
         context.Prescriptions.Add(prescription);
         await context.SaveChangesAsync();
     }
+
+    public async Task<PatientResponseDto?> GetPatientAsync(int id)
+    {
+        var patient = await context.Patients
+            .Include(p => p.Prescriptions)
+            .ThenInclude(pr => pr.PrescriptionMedicaments)
+            .ThenInclude(pm => pm.Medicament)
+            .Include(p => p.Prescriptions)
+            .ThenInclude(pr => pr.Doctor)
+            .FirstOrDefaultAsync(p => p.IdPatient == id);
+
+        if (patient == null) throw new PatientNotFoundException();
+        
+        var dto = new PatientResponseDto
+        {
+            IdPatient = patient.IdPatient,
+            FirstName = patient.FirstName,
+            LastName = patient.LastName,
+            DateOfBirth = patient.DateOfBirth,
+            Prescriptions = patient.Prescriptions.OrderBy(p => p.DueDate).Select(p => new PrescriptionResponse()
+            {
+                IdPrescription = p.IdPrescription,
+                Date = p.Date,
+                DueDate = p.DueDate,
+                Doctor = new DoctorResponse()
+                {
+                    IdDoctor = p.Doctor.IdDoctor,
+                    FirstName = p.Doctor.FirstName
+                },
+                Medicaments = p.PrescriptionMedicaments.Select(pm => new MedicamentsResponse()
+                {
+                    IdMedicament = pm.Medicament.IdMedicament,
+                    Name = pm.Medicament.Name,
+                    Dose = pm.Dose,
+                    Description = pm.Details
+                }).ToList()
+            }).ToList()
+        };
+        
+        return dto;
+    }
 }

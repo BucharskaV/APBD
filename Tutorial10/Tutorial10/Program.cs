@@ -8,9 +8,8 @@ string? connectionString = builder.Configuration.GetConnectionString("Default");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ClinicDBContext>(opt =>
-    opt.UseSqlServer(connectionString)
-);
+builder.Services.AddDbContext<ClinicDBContext>(options =>
+    options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IClinicService, ClinicService>();
 
 

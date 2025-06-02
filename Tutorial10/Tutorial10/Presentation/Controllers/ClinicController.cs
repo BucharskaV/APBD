@@ -34,4 +34,25 @@ public class ClinicController(IClinicService service) : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
+
+    [HttpGet]
+    [Route("{patientId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetPatientAsync([FromRoute] int patientId)
+    {
+        try
+        {
+             return Ok(await service.GetPatientAsync(patientId));
+        }
+        catch (PatientNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 }
