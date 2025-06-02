@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <Folder Include="API\Controllers\" />
-      <Folder Include="Core\Models\" />
     </ItemGroup>
 
 </Project>
