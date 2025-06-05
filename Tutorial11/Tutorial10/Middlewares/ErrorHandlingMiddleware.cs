@@ -20,7 +20,7 @@ public class ErrorHandlingMiddleware
         {
             await _next(context);
         }
-        catch (Exception ex) when (ex is MedicamentsNumberException or DueDateException)
+        catch (Exception ex) when (ex is MedicamentsNumberException or DueDateException or UserAlreadyExistsException)
         {
             _logger.LogError(ex, ex.Message);
             await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest);

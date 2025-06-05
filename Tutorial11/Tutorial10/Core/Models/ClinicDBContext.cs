@@ -12,6 +12,9 @@ public class ClinicDBContext : DbContext
     public DbSet<Medicament> Medicaments { get; set; }
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionMedicament> PrescriptionMedicaments { get; set; }
+    
+    public DbSet<AppUser> Users { get; set; }
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

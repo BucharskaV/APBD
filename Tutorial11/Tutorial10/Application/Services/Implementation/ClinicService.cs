@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tutorial10.Application.DTOs;
 using Tutorial10.Application.Exceptions;
+using Tutorial10.Application.Services.Abstraction;
 using Tutorial10.Core.Models;
 
-namespace Tutorial10.Application.Services;
+namespace Tutorial10.Application.Services.Implementation;
 
 public class ClinicService(ClinicDBContext context) : IClinicService
 {

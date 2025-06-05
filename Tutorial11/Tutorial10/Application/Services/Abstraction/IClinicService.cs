@@ -1,6 +1,6 @@
 ﻿using Tutorial10.Application.DTOs;
 
-namespace Tutorial10.Application.Services;
+namespace Tutorial10.Application.Services.Abstraction;
 
 public interface IClinicService
 {
