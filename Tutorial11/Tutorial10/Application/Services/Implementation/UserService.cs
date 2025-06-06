@@ -104,7 +104,7 @@ public class UserService : IUserService
             issuer: _configuration["Auth:ValidIssuer"],
             audience: _configuration["Auth:ValidAudience"],
             claims: userclaim,
-            expires: DateTime.UtcNow.AddMinutes(10),
+            expires: DateTime.Now.AddMinutes(5),
             signingCredentials: credentials
         );
 

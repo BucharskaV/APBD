@@ -26,6 +26,7 @@ public class UsersController(IUserService userService) : ControllerBase
     [Route("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> LoginUserAsync([FromBody] LoginUserRequest request)
     {
@@ -37,6 +38,7 @@ public class UsersController(IUserService userService) : ControllerBase
     [Route("refresh")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RefreshUserAsync([FromBody] RefreshTokenRequest request)
     {

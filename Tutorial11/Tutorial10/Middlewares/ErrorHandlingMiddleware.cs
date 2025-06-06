@@ -25,10 +25,15 @@ public class ErrorHandlingMiddleware
             _logger.LogError(ex, ex.Message);
             await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest);
         }
-        catch (Exception ex) when (ex is DoctorDoesNotExistsException or MedicamentsNotFoundException or PatientNotFoundException)
+        catch (Exception ex) when (ex is DoctorDoesNotExistsException or MedicamentsNotFoundException or PatientNotFoundException or UserNotFoundException)
         {
             _logger.LogError(ex, ex.Message);
             await HandleExceptionAsync(context, ex, HttpStatusCode.NotFound);
+        }
+        catch (Exception ex) when (ex is InvalidPasswordException)
+        {
+            _logger.LogError(ex, ex.Message);
+            await HandleExceptionAsync(context, ex, HttpStatusCode.Unauthorized);
         }
         catch (Exception ex)
         {
