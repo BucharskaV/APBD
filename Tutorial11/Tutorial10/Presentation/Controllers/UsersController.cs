@@ -7,8 +7,15 @@ namespace Tutorial10.Presentation.Controllers;
 
 [ApiController]
 [Route("api/users")]
-public class UsersController(IUserService userService) : ControllerBase
+public class UsersController: ControllerBase
 {
+    private readonly IUserService _userService;
+
+    public UsersController(IUserService userService)
+    {
+        _userService = userService;
+    }
+
     [AllowAnonymous]
     [HttpPost]
     [Route("register")]
@@ -17,7 +24,7 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RegisterUserAsync([FromBody] RegisterUserRequest request)
     {
-        await userService.RegisterUserAsync(request);
+        await _userService.RegisterUserAsync(request);
         return Ok();
     }
     
@@ -30,7 +37,7 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> LoginUserAsync([FromBody] LoginUserRequest request)
     {
-        return Ok(await userService.LoginUserAsync(request));
+        return Ok(await _userService.LoginUserAsync(request));
     }
     
     [Authorize(AuthenticationSchemes = "IgnoreTokenExpirationScheme")]
@@ -42,6 +49,6 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RefreshUserAsync([FromBody] RefreshTokenRequest request)
     {
-        return Ok(await userService.RefreshTokensAsync(request));
+        return Ok(await _userService.RefreshTokensAsync(request));
     }
 }
