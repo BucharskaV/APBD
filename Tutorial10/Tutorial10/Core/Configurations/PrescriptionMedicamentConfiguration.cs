@@ -12,6 +12,6 @@ public class PrescriptionMedicamentConfiguration : IEntityTypeConfiguration<Pres
         builder.HasKey(e => new {e.IdPrescription, e.IdMedicament});
         builder.Property(e => e.Details)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(100);     
     }
 }
